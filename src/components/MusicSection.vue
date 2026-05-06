@@ -11,8 +11,9 @@ defineProps({
       <h2>{{ copy.music.title }}</h2>
       <p>{{ copy.music.body }}</p>
     </div>
-    <button type="button" class="button ghost disabled-link" disabled aria-disabled="true">
+    <a class="button ghost" :href="copy.music.url" target="_blank" rel="noreferrer">
       {{ copy.music.cta }}
-    </button>
+    </a>
   </section>
 </template>
+

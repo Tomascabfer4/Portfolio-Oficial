@@ -118,7 +118,8 @@ export const content = {
       title: 'También creo música',
       body:
         'Mi perfil de DJ y productor tendrá una web propia. Aquí lo mantengo como parte de mi identidad, pero separado del portfolio técnico.',
-      cta: 'Web DJ próximamente',
+      cta: 'Ver web DJ',
+      url: 'https://landing-dj.pages.dev/',
     },
     contact: {
       title: 'Hablemos de construir algo útil',
@@ -249,7 +250,8 @@ export const content = {
       title: 'I also create music',
       body:
         'My DJ and producer profile will have its own website. Here it stays as part of my identity, but separate from the technical portfolio.',
-      cta: 'DJ website coming soon',
+      cta: 'View DJ website',
+      url: 'https://landing-dj.pages.dev/',
     },
     contact: {
       title: 'Let’s build something useful',
@@ -262,3 +264,4 @@ export const content = {
     },
   },
 }
+

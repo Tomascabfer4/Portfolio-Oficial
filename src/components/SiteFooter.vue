@@ -44,7 +44,7 @@ const emit = defineEmits(['navigate', 'home'])
           </div>
           <div>
             <a href="https://www.instagram.com/tomas_cf4" target="_blank" rel="noreferrer">Instagram</a>
-            <span class="disabled-footer-link" aria-disabled="true">{{ copy.music.cta }}</span>
+            <a :href="copy.music.url" target="_blank" rel="noreferrer">{{ copy.music.cta }}</a>
           </div>
         </div>
       </div>
@@ -81,3 +81,4 @@ const emit = defineEmits(['navigate', 'home'])
     </div>
   </footer>
 </template>
+

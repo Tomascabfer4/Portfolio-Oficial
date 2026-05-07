@@ -104,7 +104,10 @@ watch(language, (next) => {
 })
 
 watch(
-  () => reposExplorerRef.value?.filteredRepositories,
+  () => [
+    reposExplorerRef.value?.filteredRepositories,
+    reposExplorerRef.value?.paginatedRepositories,
+  ],
   () => nextTick(observeReveals),
 )
 
@@ -279,13 +282,17 @@ onUnmounted(() => {
       @toggle-menu="toggleMenu"
     />
 
-    <MobileNav
-      v-if="isMenuOpen"
-      :items="navItems"
-      :active-index="activeNavIndex"
-      @navigate="navigate"
-      @close="closeMenu"
-    />
+    <Transition name="mobile-menu">
+      <MobileNav
+        v-if="isMenuOpen"
+        :items="navItems"
+        :active-index="activeNavIndex"
+        :language="language"
+        @navigate="navigate"
+        @close="closeMenu"
+        @set-language="setLanguage"
+      />
+    </Transition>
 
     <main id="top">
       <HeroSection

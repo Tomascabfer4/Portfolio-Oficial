@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   copy: { type: Object, required: true },
@@ -12,6 +12,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:searchTerm', 'update:activeLanguageFilter'])
+const ITEMS_PER_PAGE = 6
+const currentPage = ref(1)
 
 const languageOptions = computed(() => {
   const values = props.repositories
@@ -35,6 +37,45 @@ const filteredRepositories = computed(() => {
     .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at))
 })
 
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredRepositories.value.length / ITEMS_PER_PAGE)))
+
+const paginatedRepositories = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+  return filteredRepositories.value.slice(start, start + ITEMS_PER_PAGE)
+})
+
+const paginationCopy = computed(() =>
+  props.language === 'es'
+    ? {
+        prev: 'Anterior',
+        next: 'Siguiente',
+        page: 'Página',
+        of: 'de',
+      }
+    : {
+        prev: 'Previous',
+        next: 'Next',
+        page: 'Page',
+        of: 'of',
+      },
+)
+
+watch(
+  () => [props.searchTerm, props.activeLanguageFilter, props.repositories],
+  () => {
+    currentPage.value = 1
+  },
+  { deep: true },
+)
+
+watch(totalPages, (next) => {
+  if (currentPage.value > next) currentPage.value = next
+})
+
+function goToPage(page) {
+  currentPage.value = Math.min(Math.max(1, page), totalPages.value)
+}
+
 function formatDate(value) {
   if (!value) return ''
   return new Intl.DateTimeFormat(props.language === 'es' ? 'es-ES' : 'en-GB', {
@@ -43,7 +84,7 @@ function formatDate(value) {
   }).format(new Date(value))
 }
 
-defineExpose({ filteredRepositories })
+defineExpose({ filteredRepositories, paginatedRepositories })
 </script>
 
 <template>
@@ -86,7 +127,7 @@ defineExpose({ filteredRepositories })
     <p v-if="isLoading" class="inline-note">{{ copy.labels.loading }}</p>
 
     <div class="repo-grid">
-      <article v-for="repo in filteredRepositories" :key="repo.html_url" class="repo-card" data-reveal>
+      <article v-for="repo in paginatedRepositories" :key="repo.html_url" class="repo-card" data-reveal>
         <div class="repo-card-header">
           <h3>{{ repo.name }}</h3>
           <span v-if="repo.language">{{ repo.language }}</span>
@@ -102,6 +143,30 @@ defineExpose({ filteredRepositories })
           </div>
         </div>
       </article>
+    </div>
+
+    <div v-if="totalPages > 1 && filteredRepositories.length" class="repo-pagination">
+      <button
+        type="button"
+        class="repo-pagination-button"
+        :disabled="currentPage === 1"
+        @click="goToPage(currentPage - 1)"
+      >
+        {{ paginationCopy.prev }}
+      </button>
+
+      <p class="repo-pagination-status">
+        {{ paginationCopy.page }} {{ currentPage }} {{ paginationCopy.of }} {{ totalPages }}
+      </p>
+
+      <button
+        type="button"
+        class="repo-pagination-button"
+        :disabled="currentPage === totalPages"
+        @click="goToPage(currentPage + 1)"
+      >
+        {{ paginationCopy.next }}
+      </button>
     </div>
 
     <p v-if="!filteredRepositories.length" class="empty-state">{{ copy.repos.empty }}</p>

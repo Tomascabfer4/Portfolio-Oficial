@@ -20,7 +20,7 @@ const errorMessage = ref('')
 const composerRef = ref(null)
 
 const chatAvailable = computed(() => Boolean(props.chatApiUrl))
-const showLeadCtas = computed(() => messages.value.length > 1 || !chatAvailable.value)
+const showLeadCtas = computed(() => messages.value.length > 1)
 const whatsAppBaseUrl = computed(() => props.whatsAppUrl.split('?')[0] || props.whatsAppUrl)
 
 function createAssistantMessage(content) {
@@ -177,7 +177,7 @@ onUnmounted(() => {
     <div v-if="isOpen" class="chat-modal-shell" role="dialog" aria-modal="true">
       <button class="chat-modal-backdrop" type="button" aria-label="Close" @click="closeChat" />
 
-      <section class="chat-modal-panel" data-cursor="interactive">
+      <section class="chat-modal-panel">
         <header class="chat-modal-header">
           <div>
             <p class="eyebrow">{{ chatCopy.aiButton }}</p>
@@ -234,22 +234,22 @@ onUnmounted(() => {
               {{ chatCopy.retry }}
             </button>
           </article>
-        </div>
 
-        <aside v-if="showLeadCtas" class="chat-modal-cta">
-          <div>
-            <h3>{{ chatCopy.ctaTitle }}</h3>
-            <p>{{ chatCopy.ctaBody }}</p>
-          </div>
-          <div class="chat-modal-cta-actions">
-            <a :href="buildWhatsAppUrlFromMessages()" target="_blank" rel="noreferrer">
-              {{ chatCopy.ctaWhatsapp }}
-            </a>
-            <a :href="buildMailtoFromMessages()">
-              {{ chatCopy.ctaEmail }}
-            </a>
-          </div>
-        </aside>
+          <aside v-if="showLeadCtas" class="chat-modal-cta">
+            <div>
+              <h3>{{ chatCopy.ctaTitle }}</h3>
+              <p>{{ chatCopy.ctaBody }}</p>
+            </div>
+            <div class="chat-modal-cta-actions">
+              <a :href="buildWhatsAppUrlFromMessages()" target="_blank" rel="noreferrer">
+                {{ chatCopy.ctaWhatsapp }}
+              </a>
+              <a :href="buildMailtoFromMessages()">
+                {{ chatCopy.ctaEmail }}
+              </a>
+            </div>
+          </aside>
+        </div>
 
         <form
           class="chat-modal-composer"

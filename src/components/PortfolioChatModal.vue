@@ -23,6 +23,10 @@ const chatAvailable = computed(() => Boolean(props.chatApiUrl))
 const showLeadCtas = computed(() => messages.value.length > 1)
 const whatsAppBaseUrl = computed(() => props.whatsAppUrl.split('?')[0] || props.whatsAppUrl)
 
+function getChatErrorMessage(data) {
+  return props.chatCopy.errors?.[data?.error] || props.chatCopy.error
+}
+
 function createAssistantMessage(content) {
   return {
     id: `assistant-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -121,7 +125,8 @@ async function sendMessage(nextMessage) {
     })
 
     if (!response.ok) {
-      throw new Error('chat_request_failed')
+      const data = await response.json().catch(() => null)
+      throw new Error(getChatErrorMessage(data))
     }
 
     const data = await response.json()
@@ -133,7 +138,7 @@ async function sendMessage(nextMessage) {
 
     messages.value = [...messages.value, createAssistantMessage(assistantReply)]
   } catch (error) {
-    errorMessage.value = props.chatCopy.error
+    errorMessage.value = error instanceof Error ? error.message : props.chatCopy.error
   } finally {
     isLoading.value = false
   }
@@ -211,7 +216,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="chat-modal-messages">
+        <div class="chat-modal-messages" data-lenis-prevent>
           <article
             v-for="message in messages"
             :key="message.id"

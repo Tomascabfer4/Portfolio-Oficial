@@ -54,6 +54,12 @@ body.chat-modal-open {
   overflow: hidden;
 }
 
+html.lenis.chat-modal-open,
+html.lenis.chat-modal-open body,
+body.chat-modal-open {
+  overscroll-behavior: none;
+}
+
 /* Intro overlay (splash inicial) */
 .intro-overlay {
   position: fixed;
@@ -2264,6 +2270,7 @@ h3 {
   display: grid;
   place-items: center;
   padding: 24px;
+  overscroll-behavior: contain;
 }
 
 .chat-modal-backdrop {
@@ -2282,6 +2289,7 @@ h3 {
   display: grid;
   grid-template-rows: auto auto minmax(180px, 1fr) auto;
   gap: 16px;
+  overflow: hidden;
   padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 22px;
@@ -2412,7 +2420,9 @@ h3 {
   gap: 12px;
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
   padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 .chat-message {

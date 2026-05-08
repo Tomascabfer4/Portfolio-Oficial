@@ -18,6 +18,16 @@ export const chatContent = {
       'Todavia no hay backend configurado para el chat. Puedes seguir por WhatsApp o por email.',
     error:
       'Ha habido un problema al hablar con la IA. Si quieres, puedes seguir por WhatsApp o email.',
+    errors: {
+      provider_auth_failed:
+        'La IA no puede responder porque la clave de Gemini no esta bien configurada en el Worker.',
+      provider_model_not_found:
+        'El modelo de Gemini configurado no esta disponible para esta API key. Revisa GEMINI_MODEL en Cloudflare.',
+      provider_rate_limited:
+        'Gemini ha limitado temporalmente las peticiones. Prueba de nuevo en un momento o continua por WhatsApp.',
+      bad_provider_request:
+        'Gemini ha rechazado el formato de la peticion. Estoy revisando el contrato del chat.',
+    },
     promptLabel: 'Ideas para empezar',
     prompts: [
       'Quiero una web profesional',
@@ -52,6 +62,16 @@ export const chatContent = {
       'The chat backend is not configured yet. You can still continue on WhatsApp or by email.',
     error:
       'There was a problem contacting the AI. You can still continue on WhatsApp or by email.',
+    errors: {
+      provider_auth_failed:
+        'The AI cannot reply because the Gemini key is not configured correctly in the Worker.',
+      provider_model_not_found:
+        'The configured Gemini model is not available for this API key. Check GEMINI_MODEL in Cloudflare.',
+      provider_rate_limited:
+        'Gemini has temporarily rate-limited requests. Try again shortly or continue on WhatsApp.',
+      bad_provider_request:
+        'Gemini rejected the request format. I am checking the chat contract.',
+    },
     promptLabel: 'Ways to start',
     prompts: [
       'I need a professional website',

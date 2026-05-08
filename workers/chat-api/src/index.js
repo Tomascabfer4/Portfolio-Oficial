@@ -1,6 +1,6 @@
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST,OPTIONS',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization',
 }
 
@@ -33,7 +33,7 @@ function buildSystemPrompt(context, locale) {
 }
 
 function toGeminiContents(messages) {
-  return messages
+  const validMessages = messages
     .filter(
       (message) =>
         message &&
@@ -41,10 +41,14 @@ function toGeminiContents(messages) {
         typeof message.content === 'string' &&
         message.content.trim(),
     )
-    .map((message) => ({
-      role: message.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: message.content.trim() }],
-    }))
+
+  const firstUserIndex = validMessages.findIndex((message) => message.role === 'user')
+  if (firstUserIndex === -1) return []
+
+  return validMessages.slice(firstUserIndex).map((message) => ({
+    role: message.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: message.content.trim() }],
+  }))
 }
 
 function getGeminiReply(data) {
@@ -87,6 +91,26 @@ async function callModel(env, body) {
   return getGeminiReply(data)
 }
 
+function getErrorStatus(error) {
+  const message = error instanceof Error ? error.message : ''
+  if (message.includes('provider_error:400')) return 400
+  if (message.includes('provider_error:401') || message.includes('provider_error:403')) return 502
+  if (message.includes('provider_error:404')) return 502
+  if (message.includes('provider_error:429')) return 429
+  return 500
+}
+
+function getPublicError(error) {
+  const message = error instanceof Error ? error.message : ''
+  if (message.includes('provider_error:400')) return 'bad_provider_request'
+  if (message.includes('provider_error:401') || message.includes('provider_error:403')) {
+    return 'provider_auth_failed'
+  }
+  if (message.includes('provider_error:404')) return 'provider_model_not_found'
+  if (message.includes('provider_error:429')) return 'provider_rate_limited'
+  return 'chat_failed'
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url)
@@ -95,11 +119,18 @@ export default {
       return new Response(null, { headers: corsHeaders, status: 204 })
     }
 
-    if (request.method === 'GET' && url.pathname === '/health') {
-      return json({ ok: true })
+    if (request.method === 'GET' && (url.pathname === '/health' || url.pathname === '/chat')) {
+      return json({
+        ok: true,
+        service: 'portfolio-chat-api',
+        endpoint: '/chat',
+        expectedMethod: 'POST',
+        model: env.GEMINI_MODEL || 'gemini-3-flash-preview',
+        hasGeminiKey: Boolean(env.GEMINI_API_KEY),
+      })
     }
 
-    if (request.method !== 'POST' || url.pathname !== '/chat') {
+    if (request.method !== 'POST' || (url.pathname !== '/chat' && url.pathname !== '/')) {
       return json({ error: 'not_found' }, { status: 404 })
     }
 
@@ -126,10 +157,9 @@ export default {
     } catch (error) {
       return json(
         {
-          error: 'chat_failed',
-          detail: error instanceof Error ? error.message : 'unknown_error',
+          error: getPublicError(error),
         },
-        { status: 500 },
+        { status: getErrorStatus(error) },
       )
     }
   },

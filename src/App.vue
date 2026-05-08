@@ -46,7 +46,20 @@ const lenis = useLenis()
 
 const copy = computed(() => content[language.value])
 const chatCopy = computed(() => chatContent[language.value])
-const chatApiUrl = import.meta.env.VITE_CHAT_API_URL || ''
+const chatApiUrl = computed(() => {
+  const rawUrl = import.meta.env.VITE_CHAT_API_URL || ''
+  if (!rawUrl) return ''
+
+  try {
+    const url = new URL(rawUrl)
+    if (url.pathname === '/' || url.pathname === '') {
+      url.pathname = '/chat'
+    }
+    return url.toString()
+  } catch (error) {
+    return rawUrl
+  }
+})
 const whatsAppBaseUrl = 'https://wa.me/34644969162'
 const whatsAppDefaultText = {
   es: encodeURIComponent('Hola Tomas, vengo de tu portfolio y me gustaria hablar contigo.'),
@@ -120,6 +133,14 @@ function openChat() {
 function closeChat() {
   isChatOpen.value = false
 }
+
+watch(isChatOpen, (nextOpen) => {
+  if (nextOpen) {
+    lenis.instance?.stop?.()
+  } else {
+    lenis.instance?.start?.()
+  }
+})
 
 watch(language, (next) => {
   localStorage.setItem('portfolio-language', next)
@@ -280,6 +301,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
   if (resizeHandler) window.removeEventListener('resize', resizeHandler)
+  lenis.instance?.start?.()
   observer?.disconnect()
   revealIO?.disconnect()
   abortRepos()

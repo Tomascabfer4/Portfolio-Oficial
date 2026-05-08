@@ -191,6 +191,14 @@ onUnmounted(() => {
           </div>
 
           <div class="chat-modal-header-actions">
+            <div v-if="showLeadCtas" class="chat-modal-contact-actions">
+              <a :href="buildWhatsAppUrlFromMessages()" target="_blank" rel="noreferrer">
+                {{ chatCopy.ctaWhatsapp }}
+              </a>
+              <a :href="buildMailtoFromMessages()">
+                {{ chatCopy.ctaEmail }}
+              </a>
+            </div>
             <span :class="['chat-modal-status', chatAvailable ? 'ready' : 'offline']">
               {{ chatAvailable ? chatCopy.statusReady : chatCopy.statusOffline }}
             </span>
@@ -239,21 +247,6 @@ onUnmounted(() => {
               {{ chatCopy.retry }}
             </button>
           </article>
-
-          <aside v-if="showLeadCtas" class="chat-modal-cta">
-            <div>
-              <h3>{{ chatCopy.ctaTitle }}</h3>
-              <p>{{ chatCopy.ctaBody }}</p>
-            </div>
-            <div class="chat-modal-cta-actions">
-              <a :href="buildWhatsAppUrlFromMessages()" target="_blank" rel="noreferrer">
-                {{ chatCopy.ctaWhatsapp }}
-              </a>
-              <a :href="buildMailtoFromMessages()">
-                {{ chatCopy.ctaEmail }}
-              </a>
-            </div>
-          </aside>
         </div>
 
         <form

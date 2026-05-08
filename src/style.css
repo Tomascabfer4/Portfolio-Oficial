@@ -50,6 +50,10 @@ body {
   overflow-x: clip;
 }
 
+body.chat-modal-open {
+  overflow: hidden;
+}
+
 /* Intro overlay (splash inicial) */
 .intro-overlay {
   position: fixed;
@@ -2100,6 +2104,467 @@ h3 {
   pointer-events: none;
 }
 
+.floating-contact-stack {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 55;
+  display: grid;
+  gap: 12px;
+}
+
+.floating-contact-button {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(10, 10, 12, 0.95);
+  color: var(--ink);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(18px);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.floating-contact-button::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0.68;
+  filter: blur(15px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.floating-contact-button.ai::before {
+  background: radial-gradient(circle, rgba(255, 107, 99, 0.42), transparent 68%);
+}
+
+.floating-contact-button.whatsapp::before {
+  background: radial-gradient(circle, rgba(34, 208, 145, 0.48), transparent 68%);
+}
+
+.floating-contact-button:hover {
+  transform: translateY(-2px);
+}
+
+.floating-contact-button:hover::before {
+  opacity: 0.92;
+  transform: scale(1.08);
+}
+
+.floating-contact-button.ai:hover {
+  border-color: rgba(255, 107, 99, 0.4);
+  background: rgba(255, 107, 99, 0.08);
+}
+
+.floating-contact-button.whatsapp:hover {
+  border-color: rgba(34, 208, 145, 0.45);
+  background: rgba(34, 208, 145, 0.08);
+}
+
+.floating-contact-icon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+}
+
+.floating-contact-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.floating-contact-icon .ai-clean-icon {
+  filter: drop-shadow(0 0 8px rgba(255, 107, 99, 0.38));
+}
+
+.floating-contact-icon .whatsapp-brand-icon {
+  width: 29px;
+  height: 29px;
+  filter: drop-shadow(0 0 8px rgba(34, 208, 145, 0.42));
+}
+
+.floating-contact-button.ai .floating-contact-icon {
+  color: var(--secondary);
+}
+
+.floating-contact-button.whatsapp .floating-contact-icon {
+  color: var(--primary);
+}
+
+.floating-contact-tooltip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(243, 241, 236, 0.96);
+  color: #111;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.floating-contact-button:hover .floating-contact-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.chat-modal-enter-active,
+.chat-modal-leave-active {
+  transition: opacity 240ms ease;
+}
+
+.chat-modal-enter-active .chat-modal-panel,
+.chat-modal-leave-active .chat-modal-panel {
+  transition: transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 220ms ease;
+}
+
+.chat-modal-enter-from,
+.chat-modal-leave-to {
+  opacity: 0;
+}
+
+.chat-modal-enter-from .chat-modal-panel,
+.chat-modal-leave-to .chat-modal-panel {
+  transform: translateY(24px) scale(0.98);
+  opacity: 0;
+}
+
+.chat-modal-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.chat-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 4, 6, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.chat-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(780px, 100%);
+  max-height: min(86vh, 900px);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 107, 99, 0.12), transparent 22rem),
+    radial-gradient(circle at 0% 0%, rgba(34, 208, 145, 0.08), transparent 18rem),
+    rgba(12, 12, 15, 0.96);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.5);
+}
+
+.chat-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.chat-modal-header h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.chat-modal-header p:not(.eyebrow) {
+  margin-top: 10px;
+  max-width: 620px;
+  color: var(--muted);
+}
+
+.chat-modal-header-actions {
+  display: grid;
+  justify-items: end;
+  gap: 12px;
+}
+
+.chat-modal-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chat-modal-status.ready {
+  background: rgba(34, 208, 145, 0.12);
+  color: var(--primary-strong);
+}
+
+.chat-modal-status.offline {
+  background: rgba(255, 196, 138, 0.12);
+  color: var(--amber);
+}
+
+.chat-modal-close {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+}
+
+.chat-modal-close span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.chat-modal-close span:first-child {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.chat-modal-close span:last-child {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.chat-modal-prompts {
+  display: grid;
+  gap: 10px;
+}
+
+.chat-modal-prompts > span {
+  color: rgba(255, 255, 255, 0.58);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.chat-modal-prompts > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chat-prompt-chip {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.chat-prompt-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 107, 99, 0.4);
+  background: rgba(255, 107, 99, 0.08);
+}
+
+.chat-modal-messages {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.chat-message {
+  max-width: min(84%, 620px);
+  display: grid;
+  gap: 7px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+}
+
+.chat-message.assistant {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.chat-message.user {
+  justify-self: end;
+  background: rgba(255, 107, 99, 0.1);
+  border-color: rgba(255, 107, 99, 0.25);
+}
+
+.chat-message.pending {
+  opacity: 0.78;
+}
+
+.chat-message-role {
+  color: rgba(255, 255, 255, 0.58);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chat-message p {
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+
+.chat-inline-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 196, 138, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 196, 138, 0.06);
+}
+
+.chat-inline-error p {
+  color: var(--amber);
+}
+
+.chat-inline-error button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 196, 138, 0.22);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chat-modal-cta {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.chat-modal-cta h3 {
+  margin-bottom: 4px;
+}
+
+.chat-modal-cta p {
+  color: var(--muted);
+}
+
+.chat-modal-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chat-modal-cta-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.chat-modal-cta-actions a:first-child {
+  background: var(--primary);
+  color: #07110d;
+}
+
+.chat-modal-cta-actions a:last-child {
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.chat-modal-composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.chat-modal-composer textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #0f1013;
+  color: var(--ink);
+  outline: none;
+}
+
+.chat-modal-composer textarea:focus {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 4px rgba(255, 107, 99, 0.12);
+}
+
+.chat-modal-composer button {
+  min-width: 122px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: #130a0a;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.chat-modal-composer button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     width: min(100% - 24px, 760px);
@@ -2160,6 +2625,14 @@ h3 {
   .footer-bottom > p {
     text-align: left;
   }
+
+  .chat-modal-shell {
+    padding: 18px;
+  }
+
+  .chat-modal-panel {
+    max-height: 90vh;
+  }
 }
 
 @media (max-width: 640px) {
@@ -2194,6 +2667,20 @@ h3 {
 
   .mobile-navigation {
     top: 74px;
+  }
+
+  .floating-contact-stack {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .floating-contact-button {
+    width: 54px;
+    height: 54px;
+  }
+
+  .floating-contact-tooltip {
+    display: none;
   }
 
   .nav-hamburger {
@@ -2288,5 +2775,42 @@ h3 {
 
   .footer-socials span {
     display: none;
+  }
+
+  .chat-modal-shell {
+    padding: 0;
+    place-items: end stretch;
+  }
+
+  .chat-modal-panel {
+    width: 100%;
+    max-height: min(92vh, 920px);
+    border-radius: 22px 22px 0 0;
+    padding: 18px;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  }
+
+  .chat-modal-header {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-modal-header-actions {
+    justify-items: start;
+  }
+
+  .chat-modal-messages {
+    max-height: none;
+  }
+
+  .chat-message {
+    max-width: 100%;
+  }
+
+  .chat-modal-composer {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-modal-composer button {
+    width: 100%;
   }
 }

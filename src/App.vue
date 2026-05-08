@@ -4,7 +4,9 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import { content } from './content'
+import { chatContent } from './chatContent'
 import { projectCases, skillGroups, timeline } from './data'
+import { createPortfolioChatContext } from './portfolioChatContext'
 import { useGithubRepos } from './composables/useGithubRepos'
 import { useLenis } from './composables/useLenis'
 
@@ -21,6 +23,8 @@ import TimelineHorizontal from './components/TimelineHorizontal.vue'
 import MusicSection from './components/MusicSection.vue'
 import MarqueeStrip from './components/MarqueeStrip.vue'
 import SiteFooter from './components/SiteFooter.vue'
+import FloatingContactStack from './components/FloatingContactStack.vue'
+import PortfolioChatModal from './components/PortfolioChatModal.vue'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -31,6 +35,7 @@ const activeNavIndex = ref(0)
 const isNavVisible = ref(true)
 const searchTerm = ref('')
 const activeLanguageFilter = ref('All')
+const isChatOpen = ref(false)
 
 const heroRef = ref(null)
 const reposExplorerRef = ref(null)
@@ -40,6 +45,16 @@ const { repositories, isFallback, isLoadingRepos, load: loadRepos, abort: abortR
 const lenis = useLenis()
 
 const copy = computed(() => content[language.value])
+const chatCopy = computed(() => chatContent[language.value])
+const chatApiUrl = import.meta.env.VITE_CHAT_API_URL || ''
+const whatsAppBaseUrl = 'https://wa.me/34644969162'
+const whatsAppDefaultText = {
+  es: encodeURIComponent('Hola Tomas, vengo de tu portfolio y me gustaria hablar contigo.'),
+  en: encodeURIComponent('Hi Tomas, I come from your portfolio and would like to talk with you.'),
+}
+const whatsAppUrl = computed(() => `${whatsAppBaseUrl}?text=${whatsAppDefaultText[language.value]}`)
+const emailHref = computed(() => 'mailto:tomascabfer4@gmail.com')
+const portfolioChatContext = computed(() => createPortfolioChatContext(copy.value))
 
 const navItems = computed(() => [
   { label: copy.value.nav.projects, href: '#projects' },
@@ -96,6 +111,14 @@ function toggleMenu() {
 
 function closeMenu() {
   isMenuOpen.value = false
+}
+
+function openChat() {
+  isChatOpen.value = true
+}
+
+function closeChat() {
+  isChatOpen.value = false
 }
 
 watch(language, (next) => {
@@ -306,7 +329,7 @@ onUnmounted(() => {
 
       <div class="curtain-transition" aria-hidden="true">
         <ShapeOverlays />
-        <span class="curtain-label">REPOSITORIOS</span>
+        <span class="curtain-label">{{ copy.repos.title }}</span>
       </div>
 
       <ReposExplorer
@@ -333,6 +356,23 @@ onUnmounted(() => {
   </div>
 
   <SiteFooter :copy="copy" @navigate="navigate" @home="goHome" />
+
+  <FloatingContactStack
+    :chat-copy="chatCopy"
+    :whats-app-url="whatsAppUrl"
+    @open-chat="openChat"
+  />
+
+  <PortfolioChatModal
+    :is-open="isChatOpen"
+    :copy="copy"
+    :chat-copy="chatCopy"
+    :whats-app-url="whatsAppUrl"
+    :email-href="emailHref"
+    :chat-api-url="chatApiUrl"
+    :portfolio-context="portfolioChatContext"
+    @close="closeChat"
+  />
 
   <div class="footer-spacer" />
 </template>

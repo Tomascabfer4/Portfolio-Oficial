@@ -1,0 +1,9 @@
+{
+  "name": "portfolio-chat-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-07",
+  "vars": {
+    "GEMINI_API_BASE_URL": "https://generativelanguage.googleapis.com/v1beta",
+    "GEMINI_MODEL": "gemini-3-flash-preview"
+  }
+}

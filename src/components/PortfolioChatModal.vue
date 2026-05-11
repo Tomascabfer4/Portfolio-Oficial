@@ -15,6 +15,8 @@ const emit = defineEmits(['close'])
 
 const messages = ref([])
 const input = ref('')
+const selectedPrompt = ref('')
+const isPromptMenuOpen = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
 const composerRef = ref(null)
@@ -41,6 +43,44 @@ function createUserMessage(content) {
     role: 'user',
     content,
   }
+}
+
+function getMessageParts(content) {
+  const parts = []
+  const linkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<]+)/g
+  let cursor = 0
+  let match
+
+  while ((match = linkPattern.exec(content)) !== null) {
+    if (match.index > cursor) {
+      parts.push({ type: 'text', text: content.slice(cursor, match.index) })
+    }
+
+    const markdownLabel = match[1]
+    const markdownUrl = match[2]
+    const rawUrl = match[3]
+    const url = markdownUrl || rawUrl
+    const trailing = rawUrl ? url.match(/[.,!?;:]+$/)?.[0] || '' : ''
+    const href = trailing ? url.slice(0, -trailing.length) : url
+
+    parts.push({
+      type: 'link',
+      text: markdownLabel || href,
+      href,
+    })
+
+    if (trailing) {
+      parts.push({ type: 'text', text: trailing })
+    }
+
+    cursor = match.index + match[0].length
+  }
+
+  if (cursor < content.length) {
+    parts.push({ type: 'text', text: content.slice(cursor) })
+  }
+
+  return parts
 }
 
 function resetConversation() {
@@ -89,6 +129,24 @@ function buildWhatsAppUrlFromMessages() {
   )
 
   return `${whatsAppBaseUrl.value}?text=${text}`
+}
+
+function handleComposerKeydown(event) {
+  if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return
+  event.preventDefault()
+  sendMessage(input.value)
+}
+
+function sendSelectedPrompt() {
+  if (!selectedPrompt.value) return
+  sendMessage(selectedPrompt.value)
+  selectedPrompt.value = ''
+  isPromptMenuOpen.value = false
+}
+
+function selectPrompt(prompt) {
+  selectedPrompt.value = prompt
+  sendSelectedPrompt()
 }
 
 async function sendMessage(nextMessage) {
@@ -156,6 +214,7 @@ watch(
       setTimeout(() => composerRef.value?.focus(), 40)
     } else {
       document.body.classList.remove('chat-modal-open')
+      isPromptMenuOpen.value = false
     }
   },
 )
@@ -211,7 +270,7 @@ onUnmounted(() => {
 
         <div class="chat-modal-prompts">
           <span>{{ chatCopy.promptLabel }}</span>
-          <div>
+          <div class="chat-prompt-chips">
             <button
               v-for="prompt in chatCopy.prompts"
               :key="prompt"
@@ -221,6 +280,30 @@ onUnmounted(() => {
             >
               {{ prompt }}
             </button>
+          </div>
+          <div class="chat-prompt-menu">
+            <button
+              type="button"
+              class="chat-prompt-select-button"
+              :class="{ open: isPromptMenuOpen }"
+              :aria-expanded="isPromptMenuOpen"
+              @click="isPromptMenuOpen = !isPromptMenuOpen"
+            >
+              <span>{{ selectedPrompt || chatCopy.promptLabel }}</span>
+              <i aria-hidden="true" />
+            </button>
+            <Transition name="chat-prompt-options">
+              <div v-if="isPromptMenuOpen" class="chat-prompt-options">
+                <button
+                  v-for="prompt in chatCopy.prompts"
+                  :key="prompt"
+                  type="button"
+                  @click="selectPrompt(prompt)"
+                >
+                  {{ prompt }}
+                </button>
+              </div>
+            </Transition>
           </div>
         </div>
 
@@ -233,7 +316,22 @@ onUnmounted(() => {
             <span class="chat-message-role">
               {{ message.role === 'assistant' ? chatCopy.aiButton : chatCopy.sourceTag }}
             </span>
-            <p>{{ message.content }}</p>
+            <p>
+              <template
+                v-for="(part, index) in getMessageParts(message.content)"
+                :key="`${message.id}-${index}`"
+              >
+                <a
+                  v-if="part.type === 'link'"
+                  :href="part.href"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {{ part.text }}
+                </a>
+                <span v-else>{{ part.text }}</span>
+              </template>
+            </p>
           </article>
 
           <article v-if="isLoading" class="chat-message assistant pending">
@@ -258,6 +356,7 @@ onUnmounted(() => {
             v-model="input"
             :placeholder="chatCopy.placeholder"
             rows="3"
+            @keydown="handleComposerKeydown"
           />
           <button type="submit" :disabled="isLoading || !input.trim()">
             {{ isLoading ? chatCopy.sending : chatCopy.send }}

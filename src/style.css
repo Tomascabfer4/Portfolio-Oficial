@@ -2438,8 +2438,8 @@ h3 {
   text-transform: uppercase;
 }
 
-.chat-modal-prompts > div {
-  display: flex;
+.chat-prompt-chips {
+  display: none;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -2462,6 +2462,104 @@ h3 {
   transform: translateY(-1px);
   border-color: rgba(255, 107, 99, 0.4);
   background: rgba(255, 107, 99, 0.08);
+}
+
+.chat-prompt-menu {
+  position: relative;
+  display: block;
+  width: min(420px, 100%);
+}
+
+.chat-prompt-select-button {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  outline: none;
+  text-align: left;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.chat-prompt-select-button:hover,
+.chat-prompt-select-button[aria-expanded="true"] {
+  background: rgba(255, 107, 99, 0.07);
+  border-color: rgba(255, 107, 99, 0.45);
+  box-shadow: 0 0 0 3px rgba(255, 107, 99, 0.12);
+}
+
+.chat-prompt-select-button i {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(255, 255, 255, 0.72);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.72);
+  transform: translateY(-2px) rotate(45deg);
+  flex: 0 0 auto;
+  transition: transform 180ms ease;
+}
+
+.chat-prompt-select-button.open i {
+  transform: translateY(2px) rotate(225deg);
+}
+
+.chat-prompt-options {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid rgba(255, 107, 99, 0.22);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 107, 99, 0.08), transparent 42%),
+    rgba(12, 12, 15, 0.98);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+.chat-prompt-options button {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-prompt-options button:hover {
+  background: rgba(255, 107, 99, 0.1);
+  color: var(--ink);
+}
+
+.chat-prompt-options-enter-active,
+.chat-prompt-options-leave-active {
+  transition: opacity 180ms ease, transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.chat-prompt-options-enter-from,
+.chat-prompt-options-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
 }
 
 .chat-modal-messages {
@@ -2513,6 +2611,18 @@ h3 {
 .chat-message p {
   color: var(--ink);
   white-space: pre-wrap;
+}
+
+.chat-message a {
+  color: var(--primary-strong);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.chat-message.user a {
+  color: var(--ink);
 }
 
 .chat-inline-error {
@@ -2816,22 +2926,36 @@ h3 {
 
   .chat-modal-panel {
     width: 100%;
-    height: min(92vh, 920px);
+    height: 100dvh;
+    max-height: none;
     border-radius: 22px 22px 0 0;
-    padding: 18px;
+    padding: 14px;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 10px;
   }
 
   .chat-modal-header {
     display: grid;
     padding-right: 0;
+    gap: 10px;
+  }
+
+  .chat-modal-header h2 {
+    font-size: 1.7rem;
+  }
+
+  .chat-modal-header p:not(.eyebrow) {
+    margin-top: 4px;
+    font-size: 0.82rem;
+    line-height: 1.35;
   }
 
   .chat-modal-header-actions {
     align-items: flex-start;
     flex-wrap: wrap;
     justify-content: flex-start;
-    padding-right: 54px;
+    gap: 6px;
+    padding-right: 46px;
     min-width: 0;
     max-width: 100%;
   }
@@ -2839,21 +2963,53 @@ h3 {
   .chat-modal-close {
     top: 0;
     right: 0;
+    width: 34px;
+    height: 34px;
+  }
+
+  .chat-modal-status,
+  .chat-modal-contact-actions a {
+    min-height: 28px;
+    padding: 0 9px;
+    font-size: 0.58rem;
+  }
+
+  .chat-modal-contact-actions {
+    gap: 6px;
+  }
+
+  .chat-modal-prompts {
+    gap: 6px;
   }
 
   .chat-modal-messages {
     max-height: none;
+    gap: 9px;
   }
 
   .chat-message {
     max-width: 100%;
+    padding: 11px 12px;
+    border-radius: 13px;
+  }
+
+  .chat-message p {
+    font-size: 0.88rem;
+    line-height: 1.4;
   }
 
   .chat-modal-composer {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .chat-modal-composer textarea {
+    min-height: 66px;
+    max-height: 110px;
   }
 
   .chat-modal-composer button {
     width: 100%;
+    min-height: 42px;
   }
 }
